@@ -15,35 +15,14 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Set AWS Role and Region
-        id: aws
-        run: |
-          if [[ "${GITHUB_REF_NAME}" == "main" ]]; then
-            echo "ROLE=arn:aws:iam::763378478523:role/dcoc-oidc-github-test-connection" >> $GITHUB_ENV
-            echo "REGION=us-west-2" >> $GITHUB_ENV
-            echo "BUCKET=dev-bucket-name" >> $GITHUB_ENV
-          elif [[ "${GITHUB_REF_NAME}" == "test" ]]; then
-            echo "ROLE=arn:aws:iam::<PROD_ACCOUNT>:role/GitHubActions-ProdRole" >> $GITHUB_ENV
-            echo "REGION=us-east-2" >> $GITHUB_ENV
-            echo "BUCKET=prod-bucket-name" >> $GITHUB_ENV
-          else
-            echo "Branch not configured for testing"
-            exit 1
-          fi
-
-      - name: Show environment variables
-        run: |
-          echo "ROLE=$ROLE"
-          echo "REGION=$REGION"
-          echo "BUCKET=$BUCKET"
-
-      - name: Configure AWS credentials (OIDC)
+      - name: Configure AWS credentials via OIDC
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ env.ROLE }}
-          aws-region: ${{ env.REGION }}
-      
-      - name: Test OIDC AWS connection
-        run: aws sts get-caller-identity
+          role-to-assume: arn:aws:iam::763378478523:role/shefffran-test-oidc-deploy-yml-connection-test
+          aws-region: us-east-2
+
+
+      - name: List S3 bucket contents
+        run: aws s3 ls s3://aws-config-20180809174225565500000001
 
 
