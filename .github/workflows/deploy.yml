@@ -33,7 +33,7 @@ jobs:
         id: role
         run: |
           case "${GITHUB_REF_NAME}" in
-            dev|qa)
+            main|qa)
               echo "role_arn=arn:aws:iam::763378478523:role/dcoc-oidc-github-test-connection" >> $GITHUB_OUTPUT
               ;;
             test|production)
