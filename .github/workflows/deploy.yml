@@ -36,3 +36,14 @@ jobs:
           echo "ROLE=$ROLE"
           echo "REGION=$REGION"
           echo "BUCKET=$BUCKET"
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ env.ROLE }}
+          aws-region: ${{ env.REGION }}
+      
+      - name: Test OIDC AWS connection
+        run: aws sts get-caller-identity
+
+
