@@ -33,5 +33,5 @@ jobs:
           role-to-assume: ${{ env.ROLE }}
           aws-region: ${{ env.REGION }}
 
-      - name: Test OIDC
-        run: aws sts get-caller-identity
+      - name: List S3 bucket contents
+        run: aws s3 ls s3://aws-config-20180809174225565500000001
