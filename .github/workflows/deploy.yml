@@ -43,7 +43,7 @@ jobs:
       - name: Configure AWS via OIDC
         uses: aws-actions/configure-aws-credentials@v3
         with:
-          role-to-assume: ${{ steps.role.outputs.role_arn }}
+          role-to-assume: "role_arn=arn:aws:iam::763378478523:role/dcoc-oidc-github-test-connection"
           aws-region: us-west-2
 
       - run: npm run build:${{ github.ref_name }}
