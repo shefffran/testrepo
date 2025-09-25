@@ -15,23 +15,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Set AWS Role and Region based on branch
-        id: aws-setup
-        run: |
-          echo "Branch: ${GITHUB_REF_NAME}"
-          if [[ "${GITHUB_REF_NAME}" == "main" ]]; then
-            echo "ROLE=arn:aws:iam::763378478523:role/dcoc-oidc-github-test-connection" >> $GITHUB_ENV
-            echo "REGION=us-east-2" >> $GITHUB_ENV
-          else
-            echo "Branch not configured for testing"
-            exit 1
-          fi
 
       - name: Configure AWS credentials via OIDC
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ env.ROLE }}
-          aws-region: ${{ env.REGION }}
+          role-to-assume: arn:aws:iam::763378478523:role/dcoc-oidc-github-test-connection
+          aws-region: us-east-2
 
       - name: List S3 bucket contents
         run: aws s3 ls s3://aws-config-20180809174225565500000001
