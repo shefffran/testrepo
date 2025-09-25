@@ -1,0 +1,38 @@
+name: Test AWS Role Setup
+
+on:
+  push:
+    branches: [main, test]
+
+jobs:
+  test-aws-setup:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write   # Required for OIDC
+      contents: read    # Required for actions/checkout
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set AWS Role and Region
+        id: aws
+        run: |
+          if [[ "${GITHUB_REF_NAME}" == "main" ]]; then
+            echo "ROLE=arn:aws:iam::763378478523:role/dcoc-oidc-github-test-connection" >> $GITHUB_ENV
+            echo "REGION=us-west-2" >> $GITHUB_ENV
+            echo "BUCKET=dev-bucket-name" >> $GITHUB_ENV
+          elif [[ "${GITHUB_REF_NAME}" == "test" ]]; then
+            echo "ROLE=arn:aws:iam::<PROD_ACCOUNT>:role/GitHubActions-ProdRole" >> $GITHUB_ENV
+            echo "REGION=us-east-2" >> $GITHUB_ENV
+            echo "BUCKET=prod-bucket-name" >> $GITHUB_ENV
+          else
+            echo "Branch not configured for testing"
+            exit 1
+          fi
+
+      - name: Show environment variables
+        run: |
+          echo "ROLE=$ROLE"
+          echo "REGION=$REGION"
+          echo "BUCKET=$BUCKET"
