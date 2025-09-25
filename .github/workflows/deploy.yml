@@ -23,11 +23,6 @@ jobs:
       - name: Deploy to ${{ github.ref_name }}
         run: echo "Will deploy to ${{ github.ref_name }}"
 
-      - name: NPM Install
-        run: npm ci
-
-      - name: JSPM Install
-        run: npm run jspm
 
       - name: Determine AWS Role
         id: role
