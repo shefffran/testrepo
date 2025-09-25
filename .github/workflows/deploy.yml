@@ -20,11 +20,8 @@ jobs:
         run: |
           echo "Branch: ${GITHUB_REF_NAME}"
           if [[ "${GITHUB_REF_NAME}" == "main" ]]; then
-            echo "ROLE=arn:aws:iam::763378478523:role/shefffran-prod-oidc-deploy" >> $GITHUB_ENV
+            echo "ROLE=arn:aws:iam::763378478523:role/dcoc-oidc-github-test-connection" >> $GITHUB_ENV
             echo "REGION=us-east-2" >> $GITHUB_ENV
-          elif [[ "${GITHUB_REF_NAME}" == "test" ]]; then
-            echo "ROLE=arn:aws:iam::763378478523:role/shefffran-test-oidc-deploy-yml-connection-test" >> $GITHUB_ENV
-            echo "REGION=us-west-2" >> $GITHUB_ENV
           else
             echo "Branch not configured for testing"
             exit 1
