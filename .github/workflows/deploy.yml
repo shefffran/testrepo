@@ -15,13 +15,26 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      - name: Set AWS Role and Region based on branch
+        id: aws-setup
+        run: |
+          echo "Branch: ${GITHUB_REF_NAME}"
+          if [[ "${GITHUB_REF_NAME}" == "main" ]]; then
+            echo "ROLE=arn:aws:iam::763378478523:role/shefffran-prod-oidc-deploy" >> $GITHUB_ENV
+            echo "REGION=us-east-2" >> $GITHUB_ENV
+          elif [[ "${GITHUB_REF_NAME}" == "test" ]]; then
+            echo "ROLE=arn:aws:iam::763378478523:role/shefffran-test-oidc-deploy-yml-connection-test" >> $GITHUB_ENV
+            echo "REGION=us-west-2" >> $GITHUB_ENV
+          else
+            echo "Branch not configured for testing"
+            exit 1
+          fi
+
       - name: Configure AWS credentials via OIDC
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::763378478523:role/shefffran-test-oidc-deploy-yml-connection-test
-          aws-region: us-east-2
+          role-to-assume: ${{ env.ROLE }}
+          aws-region: ${{ env.REGION }}
 
       - name: Test OIDC
         run: aws sts get-caller-identity
-
-
