@@ -1,37 +1,59 @@
-name: Test AWS Role Setup
+name: CI
 
 on:
   push:
     branches: [main, test]
 
 jobs:
-  test-aws-setup:
+  build:
     runs-on: ubuntu-latest
     permissions:
-      id-token: write   # Required for OIDC
-      contents: read    # Required for actions/checkout
+      id-token: write
+      contents: read
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Set AWS Role and Region based on branch
-        id: aws-setup
-        run: |
-          echo "Branch: ${GITHUB_REF_NAME}"
-          if [[ "${GITHUB_REF_NAME}" == "main" ]]; then
-            echo "ROLE=arn:aws:iam::763378478523:role/dcoc-oidc-github-test-connection" >> $GITHUB_ENV
-            echo "REGION=us-east-1" >> $GITHUB_ENV
-          else
-            echo "Branch not configured for testing"
-            exit 1
-          fi
-
-      - name: Configure AWS credentials via OIDC
-        uses: aws-actions/configure-aws-credentials@v4
+      - uses: actions/checkout@v3
         with:
-          role-to-assume: ${{ env.ROLE }}
-          aws-region: ${{ env.REGION }}
+          fetch-depth: 1
 
-      - name: List S3 bucket contents
-        run: aws s3 ls s3://aws-config-20180809174225565500000001
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16
+
+      - name: Deploy to ${{ github.ref_name }}
+        run: echo "Will deploy to ${{ github.ref_name }}"
+
+      - name: NPM Install
+        run: npm ci
+
+      - name: JSPM Install
+        run: npm run jspm
+
+      - name: Determine AWS Role
+        id: role
+        run: |
+          case "${GITHUB_REF_NAME}" in
+            dev|qa)
+              echo "role_arn=arn:aws:iam::763378478523:role/dcoc-oidc-github-test-connection" >> $GITHUB_OUTPUT
+              ;;
+            test|production)
+              echo "role_arn=arn:aws:iam::123456789012:role/dcoc-oidc-github-prod-connection" >> $GITHUB_OUTPUT
+              ;;
+            *)
+              echo "No role mapping for this branch"
+              exit 1
+              ;;
+          esac
+
+      - name: Configure AWS via OIDC
+        uses: aws-actions/configure-aws-credentials@v3
+        with:
+          role-to-assume: ${{ steps.role.outputs.role_arn }}
+          aws-region: us-west-2
+
+      - run: npm run build:${{ github.ref_name }}
+
+      - name: Deploy
+        run: |
+          aws s3 sync --delete ./dist s3://${{ secrets.BUCKET }}
+          aws cloudfront create-invalidation --distribution-id ${{ secrets.CLOUDFRONT_ID }} --paths "/*"
