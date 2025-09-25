@@ -21,8 +21,7 @@ jobs:
           role-to-assume: arn:aws:iam::763378478523:role/shefffran-test-oidc-deploy-yml-connection-test
           aws-region: us-east-2
 
-
-      - name: List S3 bucket contents
-        run: aws s3 ls s3://aws-config-20180809174225565500000001
+      - name: Test OIDC
+        run: aws sts get-caller-identity
 
 
